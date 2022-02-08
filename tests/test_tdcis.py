@@ -59,7 +59,8 @@ sys.path.append('../ci_singles/')
 
 from scipy.integrate import complex_ode
 from tdcis import TDCIS
-from quantum_systems.time_evolution_operators import LaserField
+from quantum_systems.time_evolution_operators import DipoleFieldInteraction
+from gauss_integrator import GaussIntegrator
 
 class linear_laser:
 
@@ -95,12 +96,12 @@ polarization = np.zeros(3)
 polarization_direction = 2
 polarization[polarization_direction] = 1
 system.set_time_evolution_operator(
-    LaserField(pulse, polarization_vector=polarization)
+    DipoleFieldInteraction(pulse, polarization_vector=polarization)
 )
 
 tdcis = TDCIS(system)
 
-r = complex_ode(tdcis).set_integrator("vode")
+r = complex_ode(tdcis).set_integrator("GaussIntegrator", s=3, eps=1e-10)
 y0 = np.complex128(np.zeros(dim_cis))
 y0[0] = 1 + 0j
 r.set_initial_value(y0)
