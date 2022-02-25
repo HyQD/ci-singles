@@ -1,14 +1,17 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from quantum_systems import construct_pyscf_system_rhf
+import basis_set_exchange as bse
 
 atom = "h 0.0 0.0 0.0; h 0.0 0.0 1.385414814"
 basis = "aug-cc-pvdz"
 charge = 0
 
+basis_set = bse.get_basis(basis, fmt='nwchem')
+
 system = construct_pyscf_system_rhf(
     molecule=atom,
-    basis=basis,
+    basis=basis_set,
     symmetry=False,
     add_spin=False,
     charge=charge,
