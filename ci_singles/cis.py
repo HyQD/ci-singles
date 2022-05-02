@@ -1,5 +1,5 @@
 class CIS:
-    def __init__(self, system):
+    def __init__(self, system, **kwargs):
 
         self.system = system
         self.np = self.system.np
