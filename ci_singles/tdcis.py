@@ -14,6 +14,35 @@ class TDCIS:
 
         self.last_timestep = None
 
+    def compute_one_body_density_matrix(self, current_time, y):
+        np = self.np
+
+        Iocc = np.eye(self.system.n)
+
+        occ = self.system.o
+        virt = self.system.v
+
+        nocc = occ.stop
+        nvirt = virt.stop - nocc
+
+        Ct_ai = y[1:].reshape(nvirt, nocc)
+
+        rho = np.zeros(self.system.h.shape, dtype=np.complex128)
+
+        rho[occ, occ] = 2 * Iocc * (
+            y[0] * y[0].conj() + np.einsum("ia,ai->", Ct_ai.T.conj(), Ct_ai)
+        ) - np.einsum("ja, ai->ji", Ct_ai.conj().T, Ct_ai)
+
+        rho[virt, occ] = np.sqrt(2) * y[0].conj() * Ct_ai
+        rho[occ, virt] = np.sqrt(2) * y[0] * Ct_ai.T.conj()
+        rho[virt, virt] = np.einsum("ia,bi->ba", Ct_ai.T.conj(), Ct_ai)
+
+        return rho
+
+    def compute_one_body_expectation_value(self, current_time, y, mat):
+        rho = self.compute_one_body_density_matrix(current_time, y)
+        return self.np.einsum("qp,pq->", rho, mat)
+
     def update_hamiltonian(self, current_time, y):
 
         if self.last_timestep == current_time:
@@ -30,12 +59,8 @@ class TDCIS:
         self.f = self.system.construct_fock_matrix(self.h, self.u)
 
         self.E0 = 2 * self.np.einsum("ii->", self.h[self.o, self.o])
-        self.E0 += 2 * self.np.einsum(
-            "ijij->", self.u[self.o, self.o, self.o, self.o]
-        )
-        self.E0 -= self.np.einsum(
-            "ijji->", self.u[self.o, self.o, self.o, self.o]
-        )
+        self.E0 += 2 * self.np.einsum("ijij->", self.u[self.o, self.o, self.o, self.o])
+        self.E0 -= self.np.einsum("ijji->", self.u[self.o, self.o, self.o, self.o])
 
     def __call__(self, current_time, C):
 
