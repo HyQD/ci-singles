@@ -21,15 +21,15 @@ class CIS:
         occ = self.o
         virt = self.v
 
-        e_ref = 2 * np.einsum("ii->", self.h[occ, occ])
-        e_ref += 2 * np.einsum("ijij->", self.u[occ, occ, occ, occ])
-        e_ref -= np.einsum("ijji->", self.u[occ, occ, occ, occ])
+        e_ref = 2 * self.np.einsum("ii->", self.h[occ, occ])
+        e_ref += 2 * self.np.einsum("ijij->", self.u[occ, occ, occ, occ])
+        e_ref -= self.np.einsum("ijji->", self.u[occ, occ, occ, occ])
 
-        self.hamiltonian = np.zeros((self.num_states, self.num_states))
+        self.hamiltonian = self.np.zeros((self.num_states, self.num_states))
 
         self.hamiltonian[0, 0] = e_ref
-        self.hamiltonian[0, 1:] = np.sqrt(2) * self.f[virt, occ].ravel()
-        self.hamiltonian[1:, 0] = np.sqrt(2) * self.f[occ, virt].ravel()
+        self.hamiltonian[0, 1:] = self.np.sqrt(2) * self.f[virt, occ].ravel()
+        self.hamiltonian[1:, 0] = self.np.sqrt(2) * self.f[occ, virt].ravel()
 
         Iocc = self.np.eye(self.n)
         Ivirt = self.np.eye(self.m)
