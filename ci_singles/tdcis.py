@@ -76,12 +76,10 @@ class TDCIS:
         C_new = self.np.zeros(C.shape, dtype=C[0].dtype)
 
         C_new[0] = -1j * (
-            self.E0 * C[0]
-            + self.np.sqrt(2) * self.np.einsum("ia,ai->", self.f[o, v], Cai)
+            self.np.sqrt(2) * self.np.einsum("ia,ai->", self.f[o, v], Cai)
         )
 
-        rhs_ai = self.E0 * Cai
-        rhs_ai += self.np.einsum("ba,aj->bj", self.f[v, v], Cai)
+        rhs_ai = self.np.einsum("ba,aj->bj", self.f[v, v], Cai)
         rhs_ai -= self.np.einsum("ij,bi->bj", self.f[o, o], Cai)
         rhs_ai += 2 * self.np.einsum("bija,ai->bj", self.u[v, o, o, v], Cai)
         rhs_ai -= self.np.einsum("biaj,ai->bj", self.u[v, o, v, o], Cai)
