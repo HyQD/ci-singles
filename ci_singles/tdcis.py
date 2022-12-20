@@ -39,6 +39,40 @@ class TDCIS:
 
         return rho
 
+    def compute_energy(self, current_time, h, u, y):
+        """
+        h is the matrix representation of a generic one-body operator
+        u is the tensor representation of a generic two-body operator
+        """
+
+        o, v = self.system.o, self.system.v
+        nocc = o.stop
+        nvirt = v.stop - nocc
+
+        f = self.system.construct_fock_matrix(h, u)
+        Ct_0 = y[0]
+        Ct_ai = y[1:].reshape(nvirt, nocc)
+
+        energy = (
+            self.np.sqrt(2)
+            * Ct_0.conj()
+            * self.np.einsum("ia, ai->", f[o, v], Ct_ai)
+        )
+        energy += (
+            self.np.sqrt(2)
+            * Ct_0
+            * self.np.einsum("ai, ai->", f[v, o], Ct_ai.conj())
+        )
+        energy += self.np.einsum("ab, ai, bi->", f[v, v], Ct_ai.conj(), Ct_ai)
+        energy -= self.np.einsum(
+            "ai,bj,jaib->", Ct_ai.conj(), Ct_ai, u[o, v, o, v]
+        )
+        energy += 2 * self.np.einsum(
+            "ai,bj,jabi->", Ct_ai.conj(), Ct_ai, u[o, v, v, o]
+        )
+        energy -= self.np.einsum("ij, aj, ai->", f[o, o], Ct_ai.conj(), Ct_ai)
+        return energy
+
     def compute_one_body_expectation_value(self, current_time, y, mat):
         rho = self.compute_one_body_density_matrix(current_time, y)
         return self.np.einsum("qp,pq->", rho, mat)
@@ -59,8 +93,12 @@ class TDCIS:
         self.f = self.system.construct_fock_matrix(self.h, self.u)
 
         self.E0 = 2 * self.np.einsum("ii->", self.h[self.o, self.o])
-        self.E0 += 2 * self.np.einsum("ijij->", self.u[self.o, self.o, self.o, self.o])
-        self.E0 -= self.np.einsum("ijji->", self.u[self.o, self.o, self.o, self.o])
+        self.E0 += 2 * self.np.einsum(
+            "ijij->", self.u[self.o, self.o, self.o, self.o]
+        )
+        self.E0 -= self.np.einsum(
+            "ijji->", self.u[self.o, self.o, self.o, self.o]
+        )
 
     def __call__(self, current_time, C):
 

@@ -58,7 +58,7 @@ import sys
 sys.path.append('../ci_singles/')
 
 from scipy.integrate import complex_ode
-from tdcis import TDCIS
+from ci_singles import TDCIS
 from quantum_systems.time_evolution_operators import DipoleFieldInteraction
 from gauss_integrator import GaussIntegrator
 
@@ -111,7 +111,8 @@ num_steps = int(tfinal / dt) + 1
 print(f"num_steps={num_steps}")
 time_points = np.linspace(0, tfinal, num_steps)
 dipole_moment = np.zeros(num_steps, dtype=np.complex128)
-
+expec_Ht = np.zeros(num_steps)
+expec_H0 = np.zeros(num_steps)
 rho = np.zeros(system.h.shape, dtype=np.complex128)
 nocc = occ.stop
 nvirt = virt.stop - nocc
@@ -137,6 +138,10 @@ for i in range(num_steps - 1):
         np.dot(rho, system.dipole_moment[polarization_direction])
     )
 
+    expec_H0[i+1] = tdcis.compute_energy(r.t+dt, system.h, system.u, r.y)
+    h_t = system.h_t(r.t+dt)
+    expec_Ht[i+1] = tdcis.compute_energy(r.t+dt, h_t, system.u, r.y)
+
     if(i%1000==0):
         print(i)
     
@@ -144,5 +149,10 @@ for i in range(num_steps - 1):
 plt.figure()
 plt.plot(time_points, -dipole_moment.real)
 plt.grid()
+
+plt.figure()
+plt.plot(time_points, expec_Ht, label=r'$\langle \Psi(t)|\hat{H}(t)|\Psi(t)$')
+plt.plot(time_points, expec_H0, label=r'$\langle \Psi(t)|\hat{H}_0|\Psi(t)$')
+plt.legend()
 
 plt.show()
