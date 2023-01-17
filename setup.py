@@ -6,6 +6,6 @@ setup(
     packages=find_packages(),
     install_requires=[
         "scipy",
-        "quantum-systems @ git+https://github.com/Schoyen/quantum-systems",
+        "quantum-systems @ git+https://github.com/HyQD/quantum-systems",
     ],
 )
