@@ -56,7 +56,7 @@ class CIS:
         else:
             return self.np.einsum("qp,ipq->i", rho, mat)
 
-    def compute_ground_state(self):
+    def compute_eigenstates(self):
         np = self.np
 
         occ = self.o
