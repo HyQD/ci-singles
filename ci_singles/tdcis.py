@@ -73,8 +73,7 @@ class TDCIS:
         energy -= self.np.einsum("ij, aj, ai->", f[o, o], Ct_ai.conj(), Ct_ai)
         return energy
 
-    def compute_one_body_expectation_value(self, current_time, y, mat):
-        rho = self.compute_one_body_density_matrix(current_time, y)
+    def compute_one_body_expectation_value(self, rho, mat):
         return self.np.einsum("qp,pq->", rho, mat)
 
     def update_hamiltonian(self, current_time, y):
