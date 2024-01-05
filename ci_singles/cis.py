@@ -56,6 +56,39 @@ class CIS:
         else:
             return self.np.einsum("qp,ipq->i", rho, mat)
 
+    def setup_hamiltonian(self, h, u):
+
+        np = self.np
+
+        occ = self.o
+        virt = self.v
+
+        f = self.system.construct_fock_matrix(h, u)
+
+        e_ref = 2 * np.einsum("ii->", h[occ, occ])
+        e_ref += 2 * np.einsum("ijij->", u[occ, occ, occ, occ])
+        e_ref -= np.einsum("ijji->", u[occ, occ, occ, occ])
+
+        hamiltonian = np.zeros((self.num_states, self.num_states))
+
+        hamiltonian[0, 0] = e_ref
+        hamiltonian[0, 1:] = np.sqrt(2) * f[virt, occ].ravel()
+        hamiltonian[1:, 0] = np.sqrt(2) * f[occ, virt].ravel()
+
+        Iocc = np.eye(self.n)
+        Ivirt = np.eye(self.m)
+
+        term1 = np.einsum("ab,ij->bjai", Ivirt, Iocc) * e_ref
+        term2 = np.einsum("ij,ab->bjai", Iocc, f[virt, virt])
+        term3 = np.einsum("ab,ij->bjai", Ivirt, f[occ, occ])
+        term4 = 2 * np.einsum("bija->bjai", u[virt, occ, occ, virt])
+        term4 -= np.einsum("biaj->bjai", u[virt, occ, virt, occ])
+        term = term1 + term2 - term3 + term4
+        term = term.reshape((self.m * self.n, self.m * self.n))
+        hamiltonian[1:, 1:] = term
+
+        return hamiltonian
+
     def compute_eigenstates(self):
         np = self.np
 
